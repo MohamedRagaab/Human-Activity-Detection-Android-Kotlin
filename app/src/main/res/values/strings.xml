@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Activity Detection</string>
+    <string name="accelerometer">Accelerometer</string>
+    <string name="gyroscope">Gyroscope</string>
+    <string name="sound">Sound Sensor</string>
+    <string name="light">Light Sensor</string>
+    <string name="temp">Temperature Sensor</string>
+    <string name="location">Location Sensor</string>
+</resources>
