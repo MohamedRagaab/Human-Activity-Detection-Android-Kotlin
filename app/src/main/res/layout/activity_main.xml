@@ -19,6 +19,8 @@
         android:id="@+id/switchButton"
         android:layout_width="75dp"
         android:layout_height="48dp"
+        android:buttonTint="@color/green"
+        android:theme="@style/CustomAppTheme"
         app:layout_constraintEnd_toEndOf="@+id/appbar"
         app:layout_constraintHorizontal_bias="0.95"
         app:layout_constraintStart_toStartOf="parent"
@@ -40,9 +42,10 @@
         app:layout_constraintEnd_toStartOf="@+id/soundSensor"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/accelerometer">
-        <RelativeLayout
+        <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/textLight"
@@ -61,8 +64,21 @@
                 tools:layout_conversion_absoluteWidth="131dp"
                 tools:layout_editor_absoluteX="5dp"
                 tools:layout_editor_absoluteY="71dp" />
+            <ProgressBar
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:id="@+id/lux"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="150"
+                android:progress="50"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="20dp"
+                android:progressTint="@color/green"
+                android:scaleY="2"
+                android:layout_weight="0.25"/>
 
-        </RelativeLayout>
+        </androidx.appcompat.widget.LinearLayoutCompat>
 
 
     </androidx.cardview.widget.CardView>
@@ -83,9 +99,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/lightSensor"
         app:layout_constraintTop_toBottomOf="@+id/gyroscope" >
-        <RelativeLayout
+        <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/textSound"
@@ -105,7 +122,7 @@
                 tools:layout_editor_absoluteX="5dp"
                 tools:layout_editor_absoluteY="71dp" />
 
-        </RelativeLayout>
+        </androidx.appcompat.widget.LinearLayoutCompat>
 
 
     </androidx.cardview.widget.CardView>
@@ -126,9 +143,10 @@
         app:layout_constraintEnd_toStartOf="@+id/temperatureSensor"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lightSensor" >
-        <RelativeLayout
+        <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/textLocation"
@@ -148,7 +166,7 @@
                 tools:layout_editor_absoluteX="5dp"
                 tools:layout_editor_absoluteY="71dp" />
 
-        </RelativeLayout>
+        </androidx.appcompat.widget.LinearLayoutCompat>
 
 
     </androidx.cardview.widget.CardView>
@@ -170,9 +188,10 @@
         app:layout_constraintStart_toEndOf="@+id/locationSensor"
         app:layout_constraintTop_toBottomOf="@+id/soundSensor" >
 
-        <RelativeLayout
+        <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/textTemperature"
@@ -188,7 +207,7 @@
                 tools:layout_editor_absoluteX="5dp"
                 tools:layout_editor_absoluteY="71dp" />
 
-        </RelativeLayout>
+        </androidx.appcompat.widget.LinearLayoutCompat>
 
 
     </androidx.cardview.widget.CardView>
@@ -211,29 +230,39 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/accelerometer"
         app:layout_constraintTop_toBottomOf="@+id/appbar">
-        <RelativeLayout
+
+        <TextView
+            android:id="@+id/textGyroscope"
+            android:layout_width="147dp"
+            android:layout_height="48dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:text="@string/gyroscope"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:layout_conversion_absoluteHeight="27dp"
+            tools:layout_conversion_absoluteWidth="131dp"
+            tools:layout_editor_absoluteX="5dp"
+            tools:layout_editor_absoluteY="71dp" />
+
+        <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center">
 
             <TextView
-                android:id="@+id/textGyroscope"
-                android:layout_width="147dp"
-                android:layout_height="48dp"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
-                android:text="@string/gyroscope"
-                android:textAlignment="center"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                tools:layout_conversion_absoluteHeight="27dp"
-                tools:layout_conversion_absoluteWidth="131dp"
-                tools:layout_editor_absoluteX="5dp"
-                tools:layout_editor_absoluteY="71dp" />
+                android:id="@+id/circle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/circle"
+                android:gravity="center"/>
 
-        </RelativeLayout>
+        </androidx.appcompat.widget.LinearLayoutCompat>
 
     </androidx.cardview.widget.CardView>
 
@@ -254,9 +283,11 @@
         app:layout_constraintEnd_toStartOf="@+id/gyroscope"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/appbar">
-        <RelativeLayout
+
+        <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/textAccelerometer"
@@ -274,9 +305,51 @@
                 tools:layout_conversion_absoluteHeight="27dp"
                 tools:layout_conversion_absoluteWidth="131dp"
                 tools:layout_editor_absoluteX="5dp"
-                tools:layout_editor_absoluteY="71dp" />
+                tools:layout_editor_absoluteY="71dp"
+                android:layout_weight="0.25"/>
 
-        </RelativeLayout>
+                <ProgressBar
+                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                    android:id="@+id/xAccelerometer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="100"
+                    android:progress="50"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginBottom="20dp"
+                    android:progressTint="@color/green"
+                    android:scaleY="2"
+                    android:layout_weight="0.25"/>
+                <ProgressBar
+                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                    android:id="@+id/yAccelerometer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="100"
+                    android:progress="50"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginBottom="20dp"
+                    android:progressTint="@color/green"
+                    android:scaleY="2"
+                    android:layout_weight="0.25"/>
+                <ProgressBar
+                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                    android:id="@+id/zAccelerometer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="100"
+                    android:progress="50"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginBottom="20dp"
+                    android:progressTint="@color/green"
+                    android:scaleY="2"
+                    android:layout_weight="0.25"/>
+
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
 
 
     </androidx.cardview.widget.CardView>
