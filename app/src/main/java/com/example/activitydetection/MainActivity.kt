@@ -130,10 +130,11 @@ class MainActivity : AppCompatActivity(){
         getUserLocation()
         getSoundLevel()
         // Foreground Service
-        createNotificationChannel()
         switch_btn.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
-                sendNotification()
+                //createNotificationChannel(channelId)
+                //sendNotificationForUser(notificationId)
+                launchForegroundService()
             } else {
                 // The toggle is disabled
             }
@@ -218,11 +219,11 @@ class MainActivity : AppCompatActivity(){
     }
 
 /* Notification Channel ****************************************************************************/
-    private fun createNotificationChannel(){
+    fun createNotificationChannel(channelId:String){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Create the NotificationChannel
             val name = "Activity Detection"
-            val descriptionText = "What are you doing?"
+            val descriptionText = "Create Notification Channel"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val mChannel = NotificationChannel(channelId, name, importance)
             mChannel.description = descriptionText
@@ -233,7 +234,7 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
-    private fun sendNotification(){
+    private fun sendNotificationForUser(notificationId:Int){
         // Tapping Notification
         val mainIntent = Intent(this, MainActivity::class.java)
         mainIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK // | Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -258,6 +259,18 @@ class MainActivity : AppCompatActivity(){
             notify(notificationId,builder.build())
         }
     }
+
+
+/* Foreground Service *************************************************************************************************/
+
+    fun launchForegroundService(){
+        val serviceIntent = Intent(this,MyForegroundService::class.java)
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            {
+                startForegroundService(serviceIntent)
+            }
+    }
+
 
     override fun onDestroy() {
         accelerometer.unregisterListener(sensorEventListener)
