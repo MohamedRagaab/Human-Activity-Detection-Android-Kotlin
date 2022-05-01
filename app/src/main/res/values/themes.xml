@@ -13,8 +13,18 @@
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+
     <style name="CustomAppTheme" parent="Theme.AppCompat">
         <item name="android:textColorPrimaryDisableOnly">#00838f</item>
         <item name="colorAccent">#00F200</item>
     </style>
+
+    <style name="Theme.ActivityDetection.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.ActivityDetection.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.ActivityDetection.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>

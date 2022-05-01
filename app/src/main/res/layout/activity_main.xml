@@ -49,6 +49,7 @@
 
             <TextView
                 android:id="@+id/textLight"
+                android:gravity="center"
                 android:layout_width="147dp"
                 android:layout_height="48dp"
                 android:layout_alignParentStart="true"
@@ -106,6 +107,7 @@
 
             <TextView
                 android:id="@+id/textSound"
+                android:gravity="center"
                 android:layout_width="147dp"
                 android:layout_height="48dp"
                 android:layout_alignParentStart="true"
@@ -113,6 +115,25 @@
                 android:layout_marginStart="24dp"
                 android:layout_marginEnd="24dp"
                 android:text="@string/sound"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:layout_conversion_absoluteHeight="27dp"
+                tools:layout_conversion_absoluteWidth="131dp"
+                tools:layout_editor_absoluteX="5dp"
+                tools:layout_editor_absoluteY="71dp" />
+
+            <TextView
+                android:id="@+id/amplitude"
+                android:gravity="center"
+                android:layout_width="147dp"
+                android:layout_height="48dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:text=""
                 android:textAlignment="center"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
@@ -164,7 +185,27 @@
                 tools:layout_conversion_absoluteHeight="27dp"
                 tools:layout_conversion_absoluteWidth="131dp"
                 tools:layout_editor_absoluteX="5dp"
-                tools:layout_editor_absoluteY="71dp" />
+                tools:layout_editor_absoluteY="71dp"
+                android:gravity="center"/>
+            <TextView
+                android:id="@+id/longAndLat"
+                android:layout_width="147dp"
+                android:layout_height="48dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:text=""
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:layout_conversion_absoluteHeight="27dp"
+                tools:layout_conversion_absoluteWidth="131dp"
+                tools:layout_editor_absoluteX="5dp"
+                tools:layout_editor_absoluteY="71dp"
+                android:gravity="center"/>
+
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -205,8 +246,21 @@
                 tools:layout_conversion_absoluteHeight="27dp"
                 tools:layout_conversion_absoluteWidth="131dp"
                 tools:layout_editor_absoluteX="5dp"
-                tools:layout_editor_absoluteY="71dp" />
-
+                tools:layout_editor_absoluteY="71dp"
+                android:gravity="center" />
+            <ProgressBar
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:id="@+id/temp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:progress="50"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="20dp"
+                android:progressTint="@color/green"
+                android:scaleY="2"
+                android:layout_weight="0.25"/>
         </androidx.appcompat.widget.LinearLayoutCompat>
 
 
@@ -233,6 +287,7 @@
 
         <TextView
             android:id="@+id/textGyroscope"
+            android:gravity="center"
             android:layout_width="147dp"
             android:layout_height="48dp"
             android:layout_alignParentStart="true"
@@ -291,6 +346,7 @@
 
             <TextView
                 android:id="@+id/textAccelerometer"
+                android:gravity="center"
                 android:layout_width="147dp"
                 android:layout_height="48dp"
                 android:layout_alignParentStart="true"
