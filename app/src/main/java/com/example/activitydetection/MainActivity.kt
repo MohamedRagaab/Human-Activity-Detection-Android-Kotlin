@@ -2,9 +2,11 @@ package com.example.activitydetection
 
 import android.Manifest
 import android.animation.ObjectAnimator
+import android.app.ActivityManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.Sensor
@@ -15,6 +17,8 @@ import android.location.Location
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.CompoundButton
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -25,6 +29,9 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import kotlin.math.asin
+import kotlin.math.cos
+import kotlin.math.sqrt
 
 
 class MainActivity : AppCompatActivity(){
@@ -39,7 +46,6 @@ class MainActivity : AppCompatActivity(){
     private lateinit var locactionText : TextView
     private lateinit var maxAmplitude : TextView
     private lateinit var switch_btn : SwitchCompat
-
     // Sensor Variables ****************************************************************************
     private lateinit var accelerometer: SensorManager
     private lateinit var gyroscope: SensorManager
@@ -47,9 +53,21 @@ class MainActivity : AppCompatActivity(){
     private lateinit var tempSensor: SensorManager
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var mRecorder : MediaRecorder
+    val mainHandler = Handler(Looper.getMainLooper())
+
     private val channelId = "channel_id_foreground_service"
     companion object {
-        val notificationId = 101
+        var notificationId = 101
+        var long:Double?=0.0
+        var lat:Double?=0.0
+        var stop = false
+        var accelerometerValues : Array<Float> = arrayOf(0.0f, 0.0f, 0.0f)
+        var gyroscopeValues : Array<Float> = arrayOf(0.0f, 0.0f, 0.0f)
+        var luxValue : Float = 0.0f
+        var tempValue : Float = 0.0f
+        var soundValue : Float = 0.0f
+        var speedValue : Double = 0.0
+
     }
 
     // On Sensor Changed ***************************************************************************
@@ -63,12 +81,19 @@ class MainActivity : AppCompatActivity(){
                 xAccelerometer.progress = x.toInt() * 9
                 yAccelerometer.progress = y.toInt() * 9
                 zAccelerometer.progress = z.toInt() * 9
+                accelerometerValues[0] = x
+                accelerometerValues[1] = y
+                accelerometerValues[2] = z
+
             }
             // Gyroscope
             if (event?.sensor?.type == Sensor.TYPE_GYROSCOPE){
                 val x = event.values[0]
                 val y = event.values[1]
                 val z = event.values[2]
+                gyroscopeValues[0] = x
+                gyroscopeValues[1] = y
+                gyroscopeValues[2] = z
                 val tx = ObjectAnimator.ofFloat(
                     circle,
                     "translationX",
@@ -88,14 +113,15 @@ class MainActivity : AppCompatActivity(){
             // Light
             if (event?.sensor?.type == Sensor.TYPE_LIGHT) {
                 val x = event.values[0]
-
+                luxValue = x
                 lux.progress = x.toInt()
+
 
             }
             // Temperature
             if (event?.sensor?.type == Sensor.TYPE_AMBIENT_TEMPERATURE) {
                 val x = event.values[0]
-
+                tempValue = x
                 temp.progress = x.toInt()
 
             }
@@ -107,7 +133,16 @@ class MainActivity : AppCompatActivity(){
         }
 
     }
-
+/* Check Foreground Service **/
+ fun foregroundServiceRunning(): Boolean {
+    val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    for (service in activityManager.getRunningServices(Int.MAX_VALUE)) {
+        if (MyForegroundService::class.java.name == service.service.className) {
+            return true
+        }
+    }
+    return false
+}
 /* onCreate ****************************************************************************************/
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -125,18 +160,24 @@ class MainActivity : AppCompatActivity(){
         locactionText = findViewById(R.id.longAndLat)
         maxAmplitude = findViewById(R.id.amplitude)
         switch_btn = findViewById(R.id.switchButton)
-        // Initialize Sensors
+        // Initialize Sensors **********************************************************************
+        // Accelerometer, Gyroscope, Light
         setupSensorStuff()
-        getUserLocation()
+        // Location
+        mainHandler.post(object : Runnable {
+            override fun run() {
+                getUserLocation()
+                mainHandler.postDelayed(this, 4000)
+            }
+        })
         getSoundLevel()
         // Foreground Service
         switch_btn.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
-                //createNotificationChannel(channelId)
-                //sendNotificationForUser(notificationId)
                 launchForegroundService()
             } else {
-                // The toggle is disabled
+               stop = true
+                //stopService(Intent(this,MyForegroundService::class.java))
             }
         })
 
@@ -163,7 +204,7 @@ class MainActivity : AppCompatActivity(){
     }
 
     /* Setup Sensors ************************************************************************************/
-    private fun setupSensorStuff(){
+    fun setupSensorStuff(){
         // Accelerometer Initialization
         accelerometer = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also {
@@ -187,38 +228,42 @@ class MainActivity : AppCompatActivity(){
         // Location
         initLocationProviderClient()
     }
-
+/* Location ****************************************************************************************/
     private fun getUserLocation() {
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),1)
                 return
         }else{
             fusedLocationProviderClient.lastLocation.addOnSuccessListener { location: Location? ->
-                var long = location?.longitude
-                var lat = location?.latitude
+                long = location?.longitude
+                lat = location?.latitude
+                if (long == null) {
+                    long = 0.0
+                    lat = 0.0
+                }
                 long = String.format("%.2f", long).toDouble()
                 lat = String.format("%.2f", lat).toDouble()
                 var text = "$lat, $long"
                 locactionText.text = text
+
             }
         }
     }
-
+/*
     fun getDistanceFromLatLonInKm(lat1: Double ,lon1: Double,lat2: Double,lon2: Double): Double {
-        var p = 0.017453292519943295    // Math.PI / 180
-        var a = 0.5 - Math.cos((lat2 - lat1) * p)/2 +
-                Math.cos(lat1 * p) * Math.cos(lat2 * p) *
-                (1 - Math.cos((lon2 - lon1) * p))/2
+        var p: Double = 0.017453292519943295    // Math.PI / 180
+        var a: Double = 0.5 - cos((lat2 - lat1) * p)/2 +
+                cos(lat1 * p) * cos(lat2 * p) *
+                (1 - cos((lon2 - lon1) * p))/2
 
-        return 12742 * Math.asin(Math.sqrt(a)) // 2 * R; R = 6371 km
+        return 12742 * asin(sqrt(a)) // 2 * R; R = 6371 km
     }
-
+*/
 
     private fun initLocationProviderClient() {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
     }
-
-/* Notification Channel ****************************************************************************/
+    /*
     fun createNotificationChannel(channelId:String){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Create the NotificationChannel
@@ -234,46 +279,33 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
-    private fun sendNotificationForUser(notificationId:Int){
-        // Tapping Notification
-        val mainIntent = Intent(this, MainActivity::class.java)
-        mainIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK // | Intent.FLAG_ACTIVITY_CLEAR_TASK
-        val mainPendingIntent: PendingIntent =
-            PendingIntent.getActivity(this, 0, mainIntent, 0)
-        // Tapping Select btn
-        val selectionIntent = Intent(this, MainActivity2::class.java)
-        selectionIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK // | Intent.FLAG_ACTIVITY_CLEAR_TASK
-        val selectionPendingIntent: PendingIntent =
-            PendingIntent.getActivity(this, 0, selectionIntent, 0)
+*/
 
-        val builder = NotificationCompat.Builder(this,channelId)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("What are you doing now?")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setContentIntent(mainPendingIntent)
-            .addAction(R.drawable.ic_launcher_foreground,"Select",selectionPendingIntent)
-            .addAction(R.drawable.ic_launcher_foreground,"Cancel",mainPendingIntent)
-
-
-        with(NotificationManagerCompat.from(this)){
-            notify(notificationId,builder.build())
-        }
-    }
 
 
 /* Foreground Service *************************************************************************************************/
 
-    fun launchForegroundService(){
-        val serviceIntent = Intent(this,MyForegroundService::class.java)
+    private fun launchForegroundService(){
+         val serviceIntent : Intent = Intent(this,MyForegroundService::class.java)
+        if(!foregroundServiceRunning()){
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             {
+                //startService(serviceIntent)
                 startForegroundService(serviceIntent)
+
+
+            }else
+            {
+                startService(serviceIntent)
             }
+        }
     }
 
 
     override fun onDestroy() {
-        accelerometer.unregisterListener(sensorEventListener)
+        //accelerometer.unregisterListener(sensorEventListener)
+        //gyroscope.unregisterListener(sensorEventListener)
+        //lightSensor.unregisterListener(sensorEventListener)
         super.onDestroy()
     }
 
