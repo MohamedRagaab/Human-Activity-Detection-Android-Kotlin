@@ -20,6 +20,7 @@
         android:layout_width="75dp"
         android:layout_height="48dp"
         android:buttonTint="@color/green"
+        android:checked="true"
         android:theme="@style/CustomAppTheme"
         app:layout_constraintEnd_toEndOf="@+id/appbar"
         app:layout_constraintHorizontal_bias="0.95"
@@ -65,19 +66,19 @@
                 tools:layout_conversion_absoluteWidth="131dp"
                 tools:layout_editor_absoluteX="5dp"
                 tools:layout_editor_absoluteY="71dp" />
-            <ProgressBar
-                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+
+            <com.mikhaellopez.circularprogressbar.CircularProgressBar
                 android:id="@+id/lux"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:max="150"
-                android:progress="50"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginBottom="20dp"
-                android:progressTint="@color/green"
-                android:scaleY="2"
-                android:layout_weight="0.25"/>
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                app:cpb_background_progressbar_color="#b6bbd8"
+                app:cpb_background_progressbar_width="5dp"
+                app:cpb_progress_direction="to_right"
+                app:cpb_progressbar_color="@color/green"
+                app:cpb_progressbar_width="5dp"
+                app:cpb_round_border="false"
+                android:layout_gravity="center"
+                app:cpb_progress="30"/>
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -248,19 +249,19 @@
                 tools:layout_editor_absoluteX="5dp"
                 tools:layout_editor_absoluteY="71dp"
                 android:gravity="center" />
-            <ProgressBar
-                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            <com.mikhaellopez.circularprogressbar.CircularProgressBar
                 android:id="@+id/temp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:max="100"
-                android:progress="50"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginBottom="20dp"
-                android:progressTint="@color/green"
-                android:scaleY="2"
-                android:layout_weight="0.25"/>
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                app:cpb_background_progressbar_color="#b6bbd8"
+                app:cpb_background_progressbar_width="5dp"
+                app:cpb_progress_direction="to_right"
+                app:cpb_progressbar_color="@color/green"
+                app:cpb_progressbar_width="5dp"
+                app:cpb_round_border="false"
+                android:layout_gravity="center"
+                app:cpb_progress="30"/>
+
         </androidx.appcompat.widget.LinearLayoutCompat>
 
 
@@ -412,3 +413,4 @@
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

@@ -29,6 +29,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.mikhaellopez.circularprogressbar.CircularProgressBar
 import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.sqrt
@@ -40,8 +41,8 @@ class MainActivity : AppCompatActivity(){
     private lateinit var xAccelerometer: ProgressBar
     private lateinit var yAccelerometer: ProgressBar
     private lateinit var zAccelerometer: ProgressBar
-    private lateinit var lux: ProgressBar
-    private lateinit var temp: ProgressBar
+    private lateinit var luxProgressBar: CircularProgressBar
+    private lateinit var tempProgressBar: CircularProgressBar
     private lateinit var circle : TextView
     private lateinit var locactionText : TextView
     private lateinit var maxAmplitude : TextView
@@ -78,7 +79,10 @@ class MainActivity : AppCompatActivity(){
                 val x = event.values[0]
                 val y = event.values[1]
                 val z = event.values[2]
-                xAccelerometer.progress = x.toInt() * 9
+                ObjectAnimator.ofInt(xAccelerometer, "progress", x.toInt() * 9)
+                    .setDuration(300)
+                    .start();
+                //xAccelerometer.progress = x.toInt() * 9
                 yAccelerometer.progress = y.toInt() * 9
                 zAccelerometer.progress = z.toInt() * 9
                 accelerometerValues[0] = x
@@ -94,6 +98,7 @@ class MainActivity : AppCompatActivity(){
                 gyroscopeValues[0] = x
                 gyroscopeValues[1] = y
                 gyroscopeValues[2] = z
+                /*
                 val tx = ObjectAnimator.ofFloat(
                     circle,
                     "translationX",
@@ -109,12 +114,13 @@ class MainActivity : AppCompatActivity(){
                 tx.duration = 500
                 ty.duration = 500
                 tx.start()
+                */
             }
             // Light
             if (event?.sensor?.type == Sensor.TYPE_LIGHT) {
                 val x = event.values[0]
                 luxValue = x
-                lux.progress = x.toInt()
+                luxProgressBar.progress = x
 
 
             }
@@ -122,7 +128,7 @@ class MainActivity : AppCompatActivity(){
             if (event?.sensor?.type == Sensor.TYPE_AMBIENT_TEMPERATURE) {
                 val x = event.values[0]
                 tempValue = x
-                temp.progress = x.toInt()
+                tempProgressBar.progress = x
 
             }
 
@@ -154,8 +160,8 @@ class MainActivity : AppCompatActivity(){
         xAccelerometer = findViewById(R.id.xAccelerometer)
         yAccelerometer = findViewById(R.id.yAccelerometer)
         zAccelerometer = findViewById(R.id.zAccelerometer)
-        lux = findViewById(R.id.lux)
-        temp = findViewById(R.id.temp)
+        tempProgressBar = findViewById(R.id.temp)
+        luxProgressBar = findViewById(R.id.lux)
         circle = findViewById(R.id.circle)
         locactionText = findViewById(R.id.longAndLat)
         maxAmplitude = findViewById(R.id.amplitude)
@@ -172,12 +178,16 @@ class MainActivity : AppCompatActivity(){
         })
         getSoundLevel()
         // Foreground Service
+        if(!stop){
+            switch_btn.toggle()
+        }
         switch_btn.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
+                stop = false
                 launchForegroundService()
             } else {
                stop = true
-                //stopService(Intent(this,MyForegroundService::class.java))
+
             }
         })
 
