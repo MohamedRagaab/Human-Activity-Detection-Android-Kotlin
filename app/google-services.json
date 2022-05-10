@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "614858513696",
+    "firebase_url": "https://activity-detection-app-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "activity-detection-app",
+    "storage_bucket": "activity-detection-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:614858513696:android:42ee59283a18bf05510b45",
+        "android_client_info": {
+          "package_name": "com.example.activitydetection"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "614858513696-j3r820uhsb5qspcoeuj5ju1clu8vg5ci.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQZM15A0msauWoKg5hGFdb0iI4FSr5fHU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "614858513696-j3r820uhsb5qspcoeuj5ju1clu8vg5ci.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

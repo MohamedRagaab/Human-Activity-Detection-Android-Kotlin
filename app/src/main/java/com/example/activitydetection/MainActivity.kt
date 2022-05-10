@@ -3,11 +3,11 @@ package com.example.activitydetection
 import android.Manifest
 import android.animation.ObjectAnimator
 import android.app.ActivityManager
-import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -15,24 +15,19 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.location.Location
 import android.media.MediaRecorder
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.*
+import android.util.DisplayMetrics
 import android.widget.CompoundButton
 import android.widget.ProgressBar
+import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mikhaellopez.circularprogressbar.CircularProgressBar
-import kotlin.math.asin
-import kotlin.math.cos
-import kotlin.math.sqrt
 
 
 class MainActivity : AppCompatActivity(){
@@ -46,14 +41,14 @@ class MainActivity : AppCompatActivity(){
     private lateinit var circle : TextView
     private lateinit var locactionText : TextView
     private lateinit var maxAmplitude : TextView
+    private lateinit var textTempValue : TextView
     private lateinit var switch_btn : SwitchCompat
     // Sensor Variables ****************************************************************************
     private lateinit var accelerometer: SensorManager
     private lateinit var gyroscope: SensorManager
     private lateinit var lightSensor: SensorManager
-    private lateinit var tempSensor: SensorManager
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    private lateinit var mRecorder : MediaRecorder
+    //private var mRecorder : MediaRecorder?=null
     val mainHandler = Handler(Looper.getMainLooper())
 
     private val channelId = "channel_id_foreground_service"
@@ -61,7 +56,7 @@ class MainActivity : AppCompatActivity(){
         var notificationId = 101
         var long:Double?=0.0
         var lat:Double?=0.0
-        var stop = false
+        var stop = true
         var accelerometerValues : Array<Float> = arrayOf(0.0f, 0.0f, 0.0f)
         var gyroscopeValues : Array<Float> = arrayOf(0.0f, 0.0f, 0.0f)
         var luxValue : Float = 0.0f
@@ -79,10 +74,7 @@ class MainActivity : AppCompatActivity(){
                 val x = event.values[0]
                 val y = event.values[1]
                 val z = event.values[2]
-                ObjectAnimator.ofInt(xAccelerometer, "progress", x.toInt() * 9)
-                    .setDuration(300)
-                    .start();
-                //xAccelerometer.progress = x.toInt() * 9
+                xAccelerometer.progress = x.toInt() * 9
                 yAccelerometer.progress = y.toInt() * 9
                 zAccelerometer.progress = z.toInt() * 9
                 accelerometerValues[0] = x
@@ -121,15 +113,6 @@ class MainActivity : AppCompatActivity(){
                 val x = event.values[0]
                 luxValue = x
                 luxProgressBar.progress = x
-
-
-            }
-            // Temperature
-            if (event?.sensor?.type == Sensor.TYPE_AMBIENT_TEMPERATURE) {
-                val x = event.values[0]
-                tempValue = x
-                tempProgressBar.progress = x
-
             }
 
         }
@@ -153,6 +136,11 @@ class MainActivity : AppCompatActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        // Screen Width
+        var displayMetrics: DisplayMetrics = DisplayMetrics()
+        windowManager.getDefaultDisplay().getMetrics(displayMetrics)
+        var height:Float = displayMetrics.ydpi
+        var width:Float = displayMetrics.xdpi
         // remove notification
         var notificationManager: NotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(MainActivity.notificationId)
@@ -166,6 +154,7 @@ class MainActivity : AppCompatActivity(){
         locactionText = findViewById(R.id.longAndLat)
         maxAmplitude = findViewById(R.id.amplitude)
         switch_btn = findViewById(R.id.switchButton)
+        textTempValue = findViewById(R.id.tempValue)
         // Initialize Sensors **********************************************************************
         // Accelerometer, Gyroscope, Light
         setupSensorStuff()
@@ -176,10 +165,13 @@ class MainActivity : AppCompatActivity(){
                 mainHandler.postDelayed(this, 4000)
             }
         })
+        // Sound
         getSoundLevel()
+        // Temperature
+        registerReceiver(this.batteryBroadcast, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         // Foreground Service
         if(!stop){
-            switch_btn.toggle()
+            switch_btn.isChecked = true
         }
         switch_btn.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
@@ -193,28 +185,44 @@ class MainActivity : AppCompatActivity(){
 
 
     }
+
+    // Get Temperature *****************************************************************************
+    var batteryBroadcast = object : BroadcastReceiver(){
+        override fun onReceive(context: Context?, intent: Intent) {
+            val temp = intent.getIntExtra("temperature",-1)/ 10
+            textTempValue.text = "$temp °C"
+            tempValue = temp.toFloat()
+            tempProgressBar.progress = temp.toFloat()
+        }
+    }
+
     /* setup sound sensor **************************************************************************/
     private fun getSoundLevel() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this,  arrayOf(Manifest.permission.RECORD_AUDIO), 1)
+        /*
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    */
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
+           /*
+            val permissions = arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            ActivityCompat.requestPermissions(this, permissions,200)
+            */
+            ActivityCompat.requestPermissions(this,
+                arrayOf(android.Manifest.permission.RECORD_AUDIO),200)
 
         } else {
-        mRecorder = MediaRecorder()
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-        mRecorder.setOutputFile("/dev/null")
-        mRecorder.prepare()
-        mRecorder.start()
-        maxAmplitude.text = mRecorder.maxAmplitude.toString()
-
+            var soundMeterObj: SoundMeter = SoundMeter()
+            soundMeterObj.start()
+           maxAmplitude.text = soundMeterObj.amplitude.toString()
+           //GetSoundLevel.startRecording()
+           //maxAmplitude.text = "${GetSoundLevel.getAmplitude().toInt()} dp"
         }
 
     }
 
     /* Setup Sensors ************************************************************************************/
-    fun setupSensorStuff(){
+    private fun setupSensorStuff(){
         // Accelerometer Initialization
         accelerometer = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also {
@@ -229,11 +237,6 @@ class MainActivity : AppCompatActivity(){
         lightSensor = getSystemService(SENSOR_SERVICE) as SensorManager
         lightSensor.getDefaultSensor(Sensor.TYPE_LIGHT)?.also {
             lightSensor.registerListener(sensorEventListener,it,SensorManager.SENSOR_DELAY_FASTEST,SensorManager.SENSOR_DELAY_FASTEST)
-        }
-        // Temperature Sensor Initialization
-        tempSensor = getSystemService(SENSOR_SERVICE) as SensorManager
-        tempSensor.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE)?.also {
-            tempSensor.registerListener(sensorEventListener,it,SensorManager.SENSOR_DELAY_FASTEST,SensorManager.SENSOR_DELAY_FASTEST)
         }
         // Location
         initLocationProviderClient()
@@ -273,25 +276,6 @@ class MainActivity : AppCompatActivity(){
     private fun initLocationProviderClient() {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
     }
-    /*
-    fun createNotificationChannel(channelId:String){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Create the NotificationChannel
-            val name = "Activity Detection"
-            val descriptionText = "Create Notification Channel"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val mChannel = NotificationChannel(channelId, name, importance)
-            mChannel.description = descriptionText
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
-            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(mChannel)
-        }
-    }
-
-*/
-
-
 
 /* Foreground Service *************************************************************************************************/
 
@@ -313,9 +297,6 @@ class MainActivity : AppCompatActivity(){
 
 
     override fun onDestroy() {
-        //accelerometer.unregisterListener(sensorEventListener)
-        //gyroscope.unregisterListener(sensorEventListener)
-        //lightSensor.unregisterListener(sensorEventListener)
         super.onDestroy()
     }
 

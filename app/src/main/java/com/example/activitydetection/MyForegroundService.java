@@ -5,7 +5,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
@@ -24,12 +23,16 @@ public class MyForegroundService extends Service {
     Float SoundValue = 0.0f;
 
     // new
-    Float[] NewAccelerometerValues = new Float[3];
-    Float[] NewGyroscopeValues = new Float[3];
-    Float NewLuxValue;
-    Double NewLong;
-    Double NewLat;
-    Float NewSoundValue;
+    static Float[] NewAccelerometerValues = new Float[3];
+    static Float[] NewGyroscopeValues = new Float[3];
+    static Float NewLuxValue;
+    static Double NewLong;
+    static Double NewLat;
+    static Double[] location = new Double[2];
+    static Float NewSoundValue;
+
+    // Activity Data
+    static ActivityData activityData = new ActivityData("","",NewAccelerometerValues,NewGyroscopeValues,location,NewLuxValue,NewSoundValue);
 
     String channelId = "foreground";
     String channelIdActivity = "Activity";
@@ -57,7 +60,7 @@ public class MyForegroundService extends Service {
                             }
 
                             try {
-                                Thread.sleep(5000);
+                                Thread.sleep(3000);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
@@ -84,10 +87,23 @@ public class MyForegroundService extends Service {
     private void activityDetection() {
 
         // Orientation ************************************************************
-        if(Math.abs(NewAccelerometerValues[1]-AccelerometerValues[1])>5.0){
+        if(Math.abs(NewAccelerometerValues[0]-AccelerometerValues[0])>5.0){
             AccelerometerValues[0] = MainActivity.Companion.getAccelerometerValues()[0];
             AccelerometerValues[1] = MainActivity.Companion.getAccelerometerValues()[1];
             AccelerometerValues[2] = MainActivity.Companion.getAccelerometerValues()[2];
+
+            activityData.Accelerometer[0] = AccelerometerValues[0];
+            activityData.Accelerometer[1] = AccelerometerValues[1];
+            activityData.Accelerometer[2] = AccelerometerValues[2];
+            activityData.Gyroscope[0] = MainActivity.Companion.getAccelerometerValues()[0];
+            activityData.Gyroscope[1] = MainActivity.Companion.getAccelerometerValues()[1];
+            activityData.Gyroscope[2] = MainActivity.Companion.getAccelerometerValues()[2];
+            activityData.SoundValue = MainActivity.Companion.getSoundValue();
+            activityData.LuxValue = MainActivity.Companion.getLuxValue();
+            activityData.Location[0] = MainActivity.Companion.getLong();
+            activityData.Location[1] = MainActivity.Companion.getLat();
+
+
             createNotificationChannel(channelIdActivity);
             sendNotificationForUser(1111);
         }

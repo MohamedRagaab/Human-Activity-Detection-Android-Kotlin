@@ -10,4 +10,5 @@
     <color name="gray">#424242</color>
     <color name="darkGray">#303030</color>
     <color name="green">#00F200</color>
+    <color name="backgroundProg">#B6BBD8</color>
 </resources>
