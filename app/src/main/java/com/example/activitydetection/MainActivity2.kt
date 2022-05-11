@@ -56,5 +56,6 @@ class MainActivity2 : AppCompatActivity() {
         database.child(key).child(data.ActivityLabel).child("Location").setValue("Long: "+data.Location[0].toString()+" Lat: "+data.Location[1].toString())
         database.child(key).child(data.ActivityLabel).child("LuxValue").setValue("Lux: "+data.LuxValue.toString())
         database.child(key).child(data.ActivityLabel).child("SoundLevel").setValue("DP: "+data.SoundValue.toString())
+        database.child(key).child(data.ActivityLabel).child("TempValue").setValue("°C: "+data.TempValue.toString())
     }
 }

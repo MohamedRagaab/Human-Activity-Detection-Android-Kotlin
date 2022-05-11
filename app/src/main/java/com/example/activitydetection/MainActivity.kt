@@ -1,7 +1,6 @@
 package com.example.activitydetection
 
 import android.Manifest
-import android.animation.ObjectAnimator
 import android.app.ActivityManager
 import android.app.NotificationManager
 import android.content.BroadcastReceiver
@@ -14,13 +13,16 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.location.Location
-import android.media.MediaRecorder
-import android.os.*
+import android.os.Build
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.DisplayMetrics
+import android.view.View
 import android.widget.CompoundButton
 import android.widget.ProgressBar
-import android.widget.Switch
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.app.ActivityCompat
@@ -32,6 +34,19 @@ import com.mikhaellopez.circularprogressbar.CircularProgressBar
 
 class MainActivity : AppCompatActivity(){
 
+    // Timer for get sound Amplitude
+    private var mHandler: Handler = Handler(Looper.getMainLooper())
+    private val mToastRunnable: Runnable = object : Runnable {
+        override fun run() {
+            Toast.makeText(this@MainActivity, "This is a delayed toast", Toast.LENGTH_SHORT).show()
+            mHandler.postDelayed(this, 5000)
+        }
+    }
+    fun startRepeating(v: View) {
+        //mHandler.postDelayed(mToastRunnable, 5000);
+        mToastRunnable.run()
+    }
+
     // Declare UI Variables ************************************************************************
     private lateinit var xAccelerometer: ProgressBar
     private lateinit var yAccelerometer: ProgressBar
@@ -40,7 +55,12 @@ class MainActivity : AppCompatActivity(){
     private lateinit var tempProgressBar: CircularProgressBar
     private lateinit var circle : TextView
     private lateinit var locactionText : TextView
-    private lateinit var maxAmplitude : TextView
+    private lateinit var sound1 : ProgressBar
+    private lateinit var sound2 : ProgressBar
+    private lateinit var sound3 : ProgressBar
+    private lateinit var sound4 : ProgressBar
+    private lateinit var sound5 : ProgressBar
+    private lateinit var sound6 : ProgressBar
     private lateinit var textTempValue : TextView
     private lateinit var switch_btn : SwitchCompat
     // Sensor Variables ****************************************************************************
@@ -53,6 +73,16 @@ class MainActivity : AppCompatActivity(){
 
     private val channelId = "channel_id_foreground_service"
     companion object {
+        //Permissions
+
+        val REQ_CODE_REC_AUDIO_AND_WRITE_EXTERNAL: Int = 101
+        val REQ_CODE_RECORD_AUDIO = 303
+        val REQ_CODE_WRITE_EXTERNAL_STORAGE = 404
+        val REQ_CODE_READ_EXTERNAL_STORAGE_IMPORT = 405
+        val REQ_CODE_READ_EXTERNAL_STORAGE_PLAYBACK = 406
+        val REQ_CODE_READ_EXTERNAL_STORAGE_DOWNLOAD = 407
+        val REQ_CODE_IMPORT_AUDIO = 11
+
         var notificationId = 101
         var long:Double?=0.0
         var lat:Double?=0.0
@@ -152,7 +182,11 @@ class MainActivity : AppCompatActivity(){
         luxProgressBar = findViewById(R.id.lux)
         circle = findViewById(R.id.circle)
         locactionText = findViewById(R.id.longAndLat)
-        maxAmplitude = findViewById(R.id.amplitude)
+        sound1 = findViewById(R.id.sound1)
+        sound2 = findViewById(R.id.sound2)
+        sound3 = findViewById(R.id.sound3)
+        sound4 = findViewById(R.id.sound4)
+        sound5 = findViewById(R.id.sound5)
         switch_btn = findViewById(R.id.switchButton)
         textTempValue = findViewById(R.id.tempValue)
         // Initialize Sensors **********************************************************************
@@ -196,29 +230,33 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
+
     /* setup sound sensor **************************************************************************/
+
     private fun getSoundLevel() {
-        /*
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    */
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
-           /*
-            val permissions = arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE)
-            ActivityCompat.requestPermissions(this, permissions,200)
-            */
-            ActivityCompat.requestPermissions(this,
-                arrayOf(android.Manifest.permission.RECORD_AUDIO),200)
-
-        } else {
-            var soundMeterObj: SoundMeter = SoundMeter()
-            soundMeterObj.start()
-           maxAmplitude.text = soundMeterObj.amplitude.toString()
-           //GetSoundLevel.startRecording()
-           //maxAmplitude.text = "${GetSoundLevel.getAmplitude().toInt()} dp"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                val permissions = arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                ActivityCompat.requestPermissions(this, permissions,1)
+            }
+               // var AudioSavePathInDevice = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" +"audio_record.mp3"
+                var direPath = "${externalCacheDir?.absolutePath}/audio_record.mp3"
+                var soundMeterObj: SoundMeter = SoundMeter()
+                soundMeterObj.start("/dev/null")
+                mainHandler.post(object : Runnable {
+                override fun run() {
+                    var amp = soundMeterObj.amplitude
+                    sound1.progress = amp.toInt() * 50
+                    sound2.progress = (amp).toInt() * 40
+                    sound3.progress = (amp).toInt() * 30
+                    sound4.progress = (amp).toInt() * 20
+                    sound5.progress = (amp).toInt() * 10
+                    mainHandler.postDelayed(this, 50)
+                }
+                })
         }
-
     }
 
     /* Setup Sensors ************************************************************************************/
@@ -295,6 +333,9 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
+    /**********************************************************************************************/
+
+    /**********************************************************************************************/
 
     override fun onDestroy() {
         super.onDestroy()

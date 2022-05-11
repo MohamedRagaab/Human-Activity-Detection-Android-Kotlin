@@ -30,9 +30,9 @@ public class MyForegroundService extends Service {
     static Double NewLat;
     static Double[] location = new Double[2];
     static Float NewSoundValue;
-
+    static Float NewTempValue;
     // Activity Data
-    static ActivityData activityData = new ActivityData("","",NewAccelerometerValues,NewGyroscopeValues,location,NewLuxValue,NewSoundValue);
+    static ActivityData activityData = new ActivityData("","",NewAccelerometerValues,NewGyroscopeValues,location,NewLuxValue,NewSoundValue,NewTempValue);
 
     String channelId = "foreground";
     String channelIdActivity = "Activity";
@@ -53,6 +53,7 @@ public class MyForegroundService extends Service {
                             Log.e("Service", String.valueOf(MainActivity.Companion.getLong()));
                             Log.e("Service", String.valueOf(MainActivity.Companion.getLat()));
                             Log.e("Service", String.valueOf(MainActivity.Companion.getSoundValue()));
+                            Log.e("Service", String.valueOf(MainActivity.Companion.getTempValue()));
                             Log.e("Service", "Service is running...");
 
                             if(MainActivity.Companion.getStop()){
@@ -102,7 +103,7 @@ public class MyForegroundService extends Service {
             activityData.LuxValue = MainActivity.Companion.getLuxValue();
             activityData.Location[0] = MainActivity.Companion.getLong();
             activityData.Location[1] = MainActivity.Companion.getLat();
-
+            activityData.TempValue = MainActivity.Companion.getTempValue();
 
             createNotificationChannel(channelIdActivity);
             sendNotificationForUser(1111);
