@@ -9,7 +9,8 @@ public class ActivityData {
     public Float LuxValue = 0.0f;
     public Float SoundValue = 0.0f;
     public Float TempValue = 0.0f;
-    ActivityData(String android_id, String ActivityLabel, Float[] Accelerometer, Float[] Gyroscope, Double[] Location, Float LuxValue, Float SoundValue, Float TempValue){
+    public Double Speed = 0.0;
+    ActivityData(String android_id, String ActivityLabel, Float[] Accelerometer, Float[] Gyroscope, Double[] Location, Float LuxValue, Float SoundValue, Float TempValue, Double Speed){
         this.android_id = android_id;
         this.ActivityLabel = ActivityLabel;
         this.Accelerometer = Accelerometer;
@@ -18,6 +19,7 @@ public class ActivityData {
         this.LuxValue = LuxValue;
         this.SoundValue = SoundValue;
         this.TempValue = TempValue;
+        this.Speed = Speed;
     }
 
 }

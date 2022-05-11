@@ -7,6 +7,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
+import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -14,6 +15,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 public class MyForegroundService extends Service {
+    static boolean Labeling = false;
     // old
     Float[] AccelerometerValues = {0.0f,0.0f,0.0f};
     Float[] GyroscopeValues = {0.0f,0.0f,0.0f};
@@ -21,6 +23,8 @@ public class MyForegroundService extends Service {
     Double Long = 0.0;
     Double Lat = 0.0;
     Float SoundValue = 0.0f;
+    Float TempValue;
+    Double Speed;
 
     // new
     static Float[] NewAccelerometerValues = new Float[3];
@@ -31,39 +35,32 @@ public class MyForegroundService extends Service {
     static Double[] location = new Double[2];
     static Float NewSoundValue;
     static Float NewTempValue;
+    static Double NewSpeed;
     // Activity Data
-    static ActivityData activityData = new ActivityData("","",NewAccelerometerValues,NewGyroscopeValues,location,NewLuxValue,NewSoundValue,NewTempValue);
+    static ActivityData activityData = new ActivityData("","",NewAccelerometerValues,NewGyroscopeValues,location,NewLuxValue,NewSoundValue,NewTempValue,NewSpeed);
 
     String channelId = "foreground";
     String channelIdActivity = "Activity";
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        OldInitialization();
         new Thread(
                 new Runnable() {
                     @Override
                     public void run() {
                         while (true) {
+                            try {
+                                Thread.sleep(2000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                             // Activity Detection **************************************************
                             NewInitialization();
                             activityDetection();
-                            //MainActivity.
-                            Log.e("Service", MainActivity.Companion.getAccelerometerValues()[1].toString());
-                            Log.e("Service", MainActivity.Companion.getGyroscopeValues()[1].toString());
-                            Log.e("Service", String.valueOf(MainActivity.Companion.getLuxValue()));
-                            Log.e("Service", String.valueOf(MainActivity.Companion.getLong()));
-                            Log.e("Service", String.valueOf(MainActivity.Companion.getLat()));
-                            Log.e("Service", String.valueOf(MainActivity.Companion.getSoundValue()));
-                            Log.e("Service", String.valueOf(MainActivity.Companion.getTempValue()));
-                            Log.e("Service", "Service is running...");
 
                             if(MainActivity.Companion.getStop()){
                                 stopServiceRunning();
-                            }
-
-                            try {
-                                Thread.sleep(3000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
                             }
                         }
                     }
@@ -87,32 +84,77 @@ public class MyForegroundService extends Service {
     /* Sensors Parameters Changed **********************************************************************/
     private void activityDetection() {
 
-        // Orientation ************************************************************
-        if(Math.abs(NewAccelerometerValues[0]-AccelerometerValues[0])>5.0){
-            AccelerometerValues[0] = MainActivity.Companion.getAccelerometerValues()[0];
-            AccelerometerValues[1] = MainActivity.Companion.getAccelerometerValues()[1];
-            AccelerometerValues[2] = MainActivity.Companion.getAccelerometerValues()[2];
+        if(!Labeling && checkNotyExist()){
+            // Calculate Speed *************************************************************************
+            NewSpeed = getDistanceFromLatLonInKm(Lat,Long,NewLat,NewLong)/(5.555555555556*Math.pow(10,-4));
 
-            activityData.Accelerometer[0] = AccelerometerValues[0];
-            activityData.Accelerometer[1] = AccelerometerValues[1];
-            activityData.Accelerometer[2] = AccelerometerValues[2];
-            activityData.Gyroscope[0] = MainActivity.Companion.getAccelerometerValues()[0];
-            activityData.Gyroscope[1] = MainActivity.Companion.getAccelerometerValues()[1];
-            activityData.Gyroscope[2] = MainActivity.Companion.getAccelerometerValues()[2];
-            activityData.SoundValue = MainActivity.Companion.getSoundValue();
-            activityData.LuxValue = MainActivity.Companion.getLuxValue();
-            activityData.Location[0] = MainActivity.Companion.getLong();
-            activityData.Location[1] = MainActivity.Companion.getLat();
-            activityData.TempValue = MainActivity.Companion.getTempValue();
+            // Orientation *****************************************************************************
+            if(Math.abs(NewAccelerometerValues[0]-AccelerometerValues[0])>6.0){
+                UpdateParameters();
+            }
 
-            createNotificationChannel(channelIdActivity);
-            sendNotificationForUser(1111);
+            // Speed ***********************************************************************************
+            if(Math.abs(NewSpeed-Speed)>100 ){
+                Speed = NewSpeed;
+                UpdateParameters();
+            }else  if(Math.abs(NewSpeed-Speed)>50){
+                Speed = NewSpeed;
+                UpdateParameters();
+            }else  if(Math.abs(NewSpeed-Speed)>20){
+                Speed = NewSpeed;
+                UpdateParameters();
+            }else  if(Math.abs(NewSpeed-Speed)>7){
+                Speed = NewSpeed;
+                UpdateParameters();
+            }else  if(Math.abs(NewSpeed-Speed)>2){
+                Speed = NewSpeed;
+                UpdateParameters();
+            }
+
+            // Light ***********************************************************************************
+            if(Math.abs(LuxValue-NewLuxValue)>800){
+                UpdateParameters();
+            }else if(Math.abs(LuxValue-NewLuxValue)>200){
+                UpdateParameters();
+            }else if(NewLuxValue == 0.0){
+                UpdateParameters();
+            }
+
+            // Sound ***********************************************************************************
+            if(Math.abs(SoundValue-NewSoundValue)>80){
+                UpdateParameters();
+            }
+            // Temp ************************************************************************************
+            if(Math.abs(TempValue-NewTempValue)>5){
+                UpdateParameters();
+            }
         }
+    }
 
+    private boolean checkNotyExist() {
+
+        NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        StatusBarNotification[] notifications =
+                new StatusBarNotification[0];
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            notifications = notificationManager.getActiveNotifications();
+
+            for (StatusBarNotification notification : notifications) {
+                if (notification.getId() == 1111) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 
-
+    void UpdateParameters(){
+        OldInitialization();
+        CreateModel();
+        createNotificationChannel(channelIdActivity);
+        sendNotificationForUser(1111);
+    }
 
     /* Notification Channel ****************************************************************************/
     void createNotificationChannel(String channelId){
@@ -156,6 +198,8 @@ public class MyForegroundService extends Service {
         PendingIntent selectionPendingIntent =
                 PendingIntent.getActivity(this, 0, selectionIntent, 0);
 
+
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this,channelId)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle("What are you doing now?")
@@ -163,8 +207,8 @@ public class MyForegroundService extends Service {
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(mainPendingIntent)
                 .addAction(R.drawable.ic_launcher_foreground,"Select",selectionPendingIntent)
-                .addAction(R.drawable.ic_launcher_foreground,"Cancel",mainPendingIntent);
-
+                .addAction(R.drawable.ic_launcher_foreground,"Dismiss",mainPendingIntent)
+                .setAutoCancel(true);
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
         // notificationId is a unique int for each notification that you must define
         notificationManager.notify(notificationId, builder.build());
@@ -173,6 +217,20 @@ public class MyForegroundService extends Service {
 
 
 /* Helper Functions ********************************************************************************/
+    void CreateModel(){
+        activityData.Accelerometer[0] = AccelerometerValues[0];
+        activityData.Accelerometer[1] = AccelerometerValues[1];
+        activityData.Accelerometer[2] = AccelerometerValues[2];
+        activityData.Gyroscope[0] = MainActivity.Companion.getAccelerometerValues()[0];
+        activityData.Gyroscope[1] = MainActivity.Companion.getAccelerometerValues()[1];
+        activityData.Gyroscope[2] = MainActivity.Companion.getAccelerometerValues()[2];
+        activityData.SoundValue = MainActivity.Companion.getSoundValue();
+        activityData.LuxValue = MainActivity.Companion.getLuxValue();
+        activityData.Location[0] = MainActivity.Companion.getLong();
+        activityData.Location[1] = MainActivity.Companion.getLat();
+        activityData.TempValue = MainActivity.Companion.getTempValue();
+        activityData.Speed = NewSpeed;
+    }
     void NewInitialization (){
         // Initialization ******************************************************
         NewAccelerometerValues[0] = MainActivity.Companion.getAccelerometerValues()[0];
@@ -185,8 +243,9 @@ public class MyForegroundService extends Service {
         NewLong = MainActivity.Companion.getLong();
         NewLat = MainActivity.Companion.getLat();
         NewSoundValue = MainActivity.Companion.getSoundValue();
+        NewTempValue = MainActivity.Companion.getTempValue();
     }
-    /*
+
     void OldInitialization(){
         // New Initialization ******************************************************
         AccelerometerValues[0] = MainActivity.Companion.getAccelerometerValues()[0];
@@ -199,8 +258,10 @@ public class MyForegroundService extends Service {
         Long = MainActivity.Companion.getLong();
         Lat = MainActivity.Companion.getLat();
         SoundValue = MainActivity.Companion.getSoundValue();
+        TempValue = MainActivity.Companion.getTempValue();
+        Speed = 0.0;
     }
-*/
+
     Double getDistanceFromLatLonInKm(Double lat1,Double lon1,Double lat2,Double lon2) {
         int R = 6371; // Radius of the earth in km
         Double dLat = deg2rad(lat2-lat1);  // deg2rad below

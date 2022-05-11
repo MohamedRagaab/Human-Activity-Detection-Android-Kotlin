@@ -18,6 +18,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.View
 import android.widget.CompoundButton
 import android.widget.ProgressBar
@@ -55,6 +56,7 @@ class MainActivity : AppCompatActivity(){
     private lateinit var tempProgressBar: CircularProgressBar
     private lateinit var circle : TextView
     private lateinit var locactionText : TextView
+    private lateinit var LuxText : TextView
     private lateinit var sound1 : ProgressBar
     private lateinit var sound2 : ProgressBar
     private lateinit var sound3 : ProgressBar
@@ -83,7 +85,7 @@ class MainActivity : AppCompatActivity(){
         val REQ_CODE_READ_EXTERNAL_STORAGE_DOWNLOAD = 407
         val REQ_CODE_IMPORT_AUDIO = 11
 
-        var notificationId = 101
+        var notificationId = 1111
         var long:Double?=0.0
         var lat:Double?=0.0
         var stop = true
@@ -143,6 +145,7 @@ class MainActivity : AppCompatActivity(){
                 val x = event.values[0]
                 luxValue = x
                 luxProgressBar.progress = x
+                LuxText.text = "$x lux"
             }
 
         }
@@ -180,6 +183,7 @@ class MainActivity : AppCompatActivity(){
         zAccelerometer = findViewById(R.id.zAccelerometer)
         tempProgressBar = findViewById(R.id.temp)
         luxProgressBar = findViewById(R.id.lux)
+        LuxText = findViewById(R.id.luxValue)
         circle = findViewById(R.id.circle)
         locactionText = findViewById(R.id.longAndLat)
         sound1 = findViewById(R.id.sound1)
@@ -242,18 +246,19 @@ class MainActivity : AppCompatActivity(){
                 ActivityCompat.requestPermissions(this, permissions,1)
             }
                // var AudioSavePathInDevice = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" +"audio_record.mp3"
-                var direPath = "${externalCacheDir?.absolutePath}/audio_record.mp3"
+                //var direPath = "${externalCacheDir?.absolutePath}/audio_record.mp3"
                 var soundMeterObj: SoundMeter = SoundMeter()
                 soundMeterObj.start("/dev/null")
                 mainHandler.post(object : Runnable {
                 override fun run() {
-                    var amp = soundMeterObj.amplitude
+                    var amp = soundMeterObj.amplitude/2700.0
                     sound1.progress = amp.toInt() * 50
                     sound2.progress = (amp).toInt() * 40
                     sound3.progress = (amp).toInt() * 30
                     sound4.progress = (amp).toInt() * 20
                     sound5.progress = (amp).toInt() * 10
                     mainHandler.postDelayed(this, 50)
+                    soundValue = amp.toFloat() * 10
                 }
                 })
         }
@@ -333,9 +338,6 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
-    /**********************************************************************************************/
-
-    /**********************************************************************************************/
 
     override fun onDestroy() {
         super.onDestroy()

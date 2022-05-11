@@ -2,27 +2,33 @@ package com.example.activitydetection
 
 import android.app.NotificationManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.Toast
 import android.provider.Settings
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 
 
 class MainActivity2 : AppCompatActivity() {
+    lateinit var handler: Handler;
     var tutorials = arrayOf(
         "Working on Computer", "On Phone",
         "Watching TV", "Listening to music-programme",
         "Reading", "Exercise",
         "Interacting with others", "Food prep",
-        "Cooking", "Eating", "House Cleaning", "Resting/Quiet Time", "Sleeping 14. Locomotion-Moving", "Driving", "Riding on the bus", "Shopping"
+        "Cooking", "Eating", "House Cleaning", "Resting-Quiet Time", "Sleeping","Locomotion-Moving", "Driving", "Riding on the bus", "Shopping"
     )
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main2)
+        // Stop Activity Detection
+        MyForegroundService.Labeling = true;
         // remove notification *********************************************************************
         val notificationManager: NotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(MainActivity.notificationId)
@@ -44,6 +50,11 @@ class MainActivity2 : AppCompatActivity() {
                 MyForegroundService.activityData.ActivityLabel = tutorials[position]
                 sendActivityToDatabase()
                 Toast.makeText(this,tutorials[position],Toast.LENGTH_SHORT).show()
+                handler = Handler(Looper.getMainLooper())
+                handler.postDelayed({
+                    Log.d("wait","2 sec")
+                }, 2000)
+                finish()
             }
     }
 
@@ -57,5 +68,10 @@ class MainActivity2 : AppCompatActivity() {
         database.child(key).child(data.ActivityLabel).child("LuxValue").setValue("Lux: "+data.LuxValue.toString())
         database.child(key).child(data.ActivityLabel).child("SoundLevel").setValue("DP: "+data.SoundValue.toString())
         database.child(key).child(data.ActivityLabel).child("TempValue").setValue("°C: "+data.TempValue.toString())
+        database.child(key).child(data.ActivityLabel).child("Speed").setValue("Kmperhr: "+data.Speed.toString())
+    }
+    override fun onDestroy() {
+        MyForegroundService.Labeling = false;
+        super.onDestroy()
     }
 }
