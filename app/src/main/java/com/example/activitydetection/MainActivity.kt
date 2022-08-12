@@ -13,10 +13,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.location.Location
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
@@ -31,6 +28,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mikhaellopez.circularprogressbar.CircularProgressBar
+import kotlin.math.roundToInt
 
 
 class MainActivity : AppCompatActivity(){
@@ -144,8 +142,8 @@ class MainActivity : AppCompatActivity(){
             if (event?.sensor?.type == Sensor.TYPE_LIGHT) {
                 val x = event.values[0]
                 luxValue = x
-                luxProgressBar.progress = x
-                LuxText.text = "$x lux"
+                luxProgressBar.progress = x.toInt().toFloat()
+                LuxText.text = "${x.toInt()} lux"
             }
 
         }
@@ -245,22 +243,31 @@ class MainActivity : AppCompatActivity(){
                 val permissions = arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE)
                 ActivityCompat.requestPermissions(this, permissions,1)
             }
-               // var AudioSavePathInDevice = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" +"audio_record.mp3"
+            while(true){
+                if (ContextCompat.checkSelfPermission(this,
+                        Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED){
+                    break
+                }
+            }
+                //var AudioSavePathInDevice = Environment.getExternalStorageDirectory().absolutePath + "/" +"audio_record.mp3"
                 //var direPath = "${externalCacheDir?.absolutePath}/audio_record.mp3"
                 var soundMeterObj: SoundMeter = SoundMeter()
                 soundMeterObj.start("/dev/null")
+                //soundMeterObj.start(AudioSavePathInDevice)
                 mainHandler.post(object : Runnable {
-                override fun run() {
-                    var amp = soundMeterObj.amplitude/2700.0
-                    sound1.progress = amp.toInt() * 50
-                    sound2.progress = (amp).toInt() * 40
-                    sound3.progress = (amp).toInt() * 30
-                    sound4.progress = (amp).toInt() * 20
-                    sound5.progress = (amp).toInt() * 10
-                    mainHandler.postDelayed(this, 50)
-                    soundValue = amp.toFloat() * 10
-                }
+                    override fun run() {
+                        var amp = soundMeterObj.amplitude/2700.0
+                        sound1.progress = amp.toInt() * 50
+                        sound2.progress = (amp).toInt() * 40
+                        sound3.progress = (amp).toInt() * 30
+                        sound4.progress = (amp).toInt() * 20
+                        sound5.progress = (amp).toInt() * 10
+                        mainHandler.postDelayed(this, 50)
+                        soundValue = amp.toFloat() * 10
+                    }
                 })
+
+
         }
     }
 
@@ -297,25 +304,15 @@ class MainActivity : AppCompatActivity(){
                     long = 0.0
                     lat = 0.0
                 }
-                long = String.format("%.2f", long).toDouble()
-                lat = String.format("%.2f", lat).toDouble()
+                long = (long!! * 10.0).roundToInt() / 10.0
+                lat = (lat!! * 10.0).roundToInt() / 10.0
+                //long = String.format("%.2f", long).toDouble()
+                //lat = String.format("%.2f", lat).toDouble()
                 var text = "$lat, $long"
                 locactionText.text = text
-
             }
         }
     }
-/*
-    fun getDistanceFromLatLonInKm(lat1: Double ,lon1: Double,lat2: Double,lon2: Double): Double {
-        var p: Double = 0.017453292519943295    // Math.PI / 180
-        var a: Double = 0.5 - cos((lat2 - lat1) * p)/2 +
-                cos(lat1 * p) * cos(lat2 * p) *
-                (1 - cos((lon2 - lon1) * p))/2
-
-        return 12742 * asin(sqrt(a)) // 2 * R; R = 6371 km
-    }
-*/
-
     private fun initLocationProviderClient() {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
     }
@@ -327,8 +324,9 @@ class MainActivity : AppCompatActivity(){
         if(!foregroundServiceRunning()){
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             {
+                applicationContext.startForegroundService(serviceIntent)
                 //startService(serviceIntent)
-                startForegroundService(serviceIntent)
+                //startForegroundService(serviceIntent)
 
 
             }else

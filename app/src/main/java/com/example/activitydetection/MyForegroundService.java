@@ -84,7 +84,8 @@ public class MyForegroundService extends Service {
     /* Sensors Parameters Changed **********************************************************************/
     private void activityDetection() {
 
-        if(!Labeling && checkNotyExist()){
+        //if(!Labeling && checkNotyExist()){
+
             // Calculate Speed *************************************************************************
             NewSpeed = getDistanceFromLatLonInKm(Lat,Long,NewLat,NewLong)/(5.555555555556*Math.pow(10,-4));
 
@@ -128,7 +129,7 @@ public class MyForegroundService extends Service {
             if(Math.abs(TempValue-NewTempValue)>5){
                 UpdateParameters();
             }
-        }
+        //}
     }
 
     private boolean checkNotyExist() {
@@ -151,9 +152,11 @@ public class MyForegroundService extends Service {
 
     void UpdateParameters(){
         OldInitialization();
-        CreateModel();
-        createNotificationChannel(channelIdActivity);
-        sendNotificationForUser(1111);
+        if(!Labeling && checkNotyExist()){
+            CreateModel();
+            createNotificationChannel(channelIdActivity);
+            sendNotificationForUser(1111);
+        }
     }
 
     /* Notification Channel ****************************************************************************/
@@ -208,6 +211,7 @@ public class MyForegroundService extends Service {
                 .setContentIntent(mainPendingIntent)
                 .addAction(R.drawable.ic_launcher_foreground,"Select",selectionPendingIntent)
                 .addAction(R.drawable.ic_launcher_foreground,"Dismiss",mainPendingIntent)
+                .setContentIntent(selectionPendingIntent)
                 .setAutoCancel(true);
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
         // notificationId is a unique int for each notification that you must define
