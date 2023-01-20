@@ -1,6 +1,6 @@
 # Human Activity Detection App
 
-it is an app that can detect the human activity by processing the collected data from the mobile sensors such as Accelerometer, Gyroscope, light sensor, location sensor, sound detector and temperature sensor then upload these detected data to firebase database collections.
+It is an app that can detect the human activity by processing the collected data from the mobile sensors such as Accelerometer, Gyroscope, light sensor, location sensor, sound detector and temperature sensor then upload these detected data to firebase database collections.
 
 * Download the APK from [here](https://github.com/MohamedRagaab/Human-Activity-Detection-Android-Kotlin/blob/main/app-release.apk).
 
